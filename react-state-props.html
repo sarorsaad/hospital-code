@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React State vs Props Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .header p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .header a {
+            color: #61dafb;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .header a:hover {
+            color: #4fa8c7;
+            text-decoration: underline;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .state-card {
+            border-top: 5px solid #61dafb;
+        }
+
+        .props-card {
+            border-top: 5px solid #764abc;
+        }
+
+        .demo-section {
+            margin-top: 3rem;
+        }
+
+        .interactive-demo {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .component {
+            border: 2px dashed #61dafb;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .child-component {
+            border: 2px dashed #764abc;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #61dafb;
+            color: #1a1a1a;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #4fa8c7;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+        }
+
+        .flow-diagram {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: #61dafb;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Understanding State vs Props in React</h1>
+            <p>An interactive visualization of React's core concepts</p>
+            <a href="https://joelolawanle.com/blog/understanding-state-props-react-key-differences-explained" target="_blank" rel="noopener noreferrer">
+                Original article by Joel Olawanle
+            </a>
+        </div>
+
+        <div class="comparison-container">
+            <div class="card state-card">
+                <h2>State</h2>
+                <p>Internal component data that can change over time</p>
+                <div class="code-block">
+                    const [count, setCount] = useState(0);
+                </div>
+                <ul>
+                    <li>Managed within component</li>
+                    <li>Can be modified (mutable)</li>
+                    <li>Triggers re-render when changed</li>
+                    <li>Initialized in component</li>
+                </ul>
+            </div>
+
+            <div class="card props-card">
+                <h2>Props</h2>
+                <p>External data passed to component</p>
+                <div class="code-block">
+                    function Greeting({ name }) {
+                        return <h1>Hello {name}!</h1>;
+                    }
+                </div>
+                <ul>
+                    <li>Passed from parent</li>
+                    <li>Read-only (immutable)</li>
+                    <li>Updates from parent re-render</li>
+                    <li>Received from outside</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Interactive Demo</h2>
+            <div class="interactive-demo">
+                <div class="component" id="parent">
+                    <h3>Parent Component</h3>
+                    <p>State: <span id="parentState">0</span></p>
+                    <button onclick="incrementParent()">Increment State</button>
+
+                    <div class="child-component" id="child">
+                        <h3>Child Component</h3>
+                        <p>Received Props: <span id="childProps">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-diagram">
+            <h2>Data Flow</h2>
+            <div class="flow-container">
+                <div class="component">Parent</div>
+                <div class="flow-arrow">→</div>
+                <div class="child-component">Child</div>
+            </div>
+            <p>Props flow down, events flow up</p>
+        </div>
+    </div>
+
+    <script>
+        let parentState = 0;
+
+        function incrementParent() {
+            parentState++;
+            document.getElementById('parentState').textContent = parentState;
+            // Props automatically update child when parent state changes
+            document.getElementById('childProps').textContent = parentState;
+
+            // Add visual feedback
+            const parent = document.getElementById('parent');
+            parent.style.backgroundColor = '#f0f9ff';
+            setTimeout(() => {
+                parent.style.backgroundColor = 'transparent';
+            }, 300);
+        }
+
+        // Add hover effects for components
+        const components = document.querySelectorAll('.component, .child-component');
+        components.forEach(component => {
+            component.addEventListener('mouseover', () => {
+                component.style.backgroundColor = '#f0f9ff';
+            });
+            component.addEventListener('mouseout', () => {
+                component.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</body>
+</html>
