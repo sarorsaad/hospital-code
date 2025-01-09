@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next.js 14 Data Fetching Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .main-content {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .header a {
+            color: #0070f3;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .header a:hover {
+            color: #0051b3;
+            text-decoration: underline;
+        }
+
+        .sidebar {
+            width: 300px;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h3 {
+            color: #0070f3;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar li:hover {
+            background-color: #f0f7ff;
+        }
+
+        .sidebar a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .sidebar a:hover {
+            color: #0070f3;
+        }
+
+        .sidebar li.active {
+            background-color: #f0f7ff;
+        }
+
+        .sidebar li.active a {
+            color: #0070f3;
+            font-weight: 500;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 0;
+        }
+
+        .timeline-item {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+            opacity: 0;
+            display: none;
+            transform: translateY(20px);
+        }
+
+        .timeline-item.active {
+            opacity: 1;
+            display: block;
+            transform: translateY(0);
+        }
+
+        .timeline-content {
+            cursor: pointer;
+        }
+
+        .timeline-content h3 {
+            color: #0070f3;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-content h3::before {
+            content: attr(data-year);
+            background: #0070f3;
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+            font-weight: normal;
+        }
+
+        .timeline-content p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            display: none;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .timeline-content.active .code-block {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                top: 0;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+            <ul id="nav-links">
+                <!-- Navigation links will be added by JavaScript -->
+            </ul>
+        </aside>
+        <div class="main-content">
+            <div class="header">
+                <h1>Next.js Data Fetching Evolution</h1>
+                <p>Click on each card to see code examples</p>
+                <a href="https://joelolawanle.com/blog/data-fectching-nextjs-14" target="_blank" rel="noopener noreferrer">
+                    Original article by Joel Olawanle
+                </a>
+            </div>
+
+            <div class="timeline" id="timeline">
+                <!-- Timeline items will be added by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const timelineData = [
+            {
+                year: '2016',
+                title: 'getInitialProps',
+                description: 'The original method for server-side data fetching in Next.js',
+                code: `
+// pages/index.js
+function HomePage({ posts }) {
+    return (
+        <ul>
+            {posts.map(post => (
+                <li key={post.id}>{post.title}</li>
+            ))}
+        </ul>
+    )
+}
+
+HomePage.getInitialProps = async () => {
+    const res = await fetch('https://api.example.com/posts')
+    const posts = await res.json()
+    return { posts }
+}`
+            },
+            {
+                year: '2020',
+                title: 'getServerSideProps & getStaticProps',
+                description: 'Introduced in Next.js 9.3, providing more specific data fetching strategies',
+                code: `
+// Server-side rendering (SSR)
+export async function getServerSideProps() {
+    const res = await fetch('https://api.example.com/posts')
+    const posts = await res.json()
+    return { props: { posts } }
+}
+
+// Static site generation (SSG)
+export async function getStaticProps() {
+    const res = await fetch('https://api.example.com/posts')
+    const posts = await res.json()
+    return {
+        props: { posts },
+        revalidate: 10 // ISR: revalidate every 10 seconds
+    }
+}`
+            },
+            {
+                year: '2023',
+                title: 'Server Components & fetch API',
+                description: 'Modern approach using React Server Components and native fetch',
+                code: `
+// app/page.js
+async function PostList() {
+    const posts = await fetch('https://api.example.com/posts', {
+        next: { revalidate: 3600 } // Revalidate every hour
+    }).then(res => res.json())
+
+    return (
+        <ul>
+            {posts.map(post => (
+                <li key={post.id}>{post.title}</li>
+            ))}
+        </ul>
+    )
+}`
+            },
+            {
+                year: '2024',
+                title: 'Route Handlers & Client Components',
+                description: 'Modern client-side data fetching with Route Handlers',
+                code: `
+// app/api/posts/route.ts
+export async function GET() {
+    const posts = await fetchPosts()
+    return Response.json(posts)
+}
+
+// app/posts/page.tsx
+'use client'
+import { useEffect, useState } from 'react'
+
+export default function Posts() {
+    const [posts, setPosts] = useState([])
+
+    useEffect(() => {
+        fetch('/api/posts')
+            .then(res => res.json())
+            .then(setPosts)
+    }, [])
+
+    return (
+        <ul>
+            {posts.map(post => (
+                <li key={post.id}>{post.title}</li>
+            ))}
+        </ul>
+    )
+}`
+            }
+        ];
+
+        function createTimelineItems() {
+            const timeline = document.getElementById('timeline');
+            const navLinks = document.getElementById('nav-links');
+            timeline.innerHTML = '';
+            navLinks.innerHTML = '';
+
+            timelineData.forEach((item, index) => {
+                // Create timeline item
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                timelineItem.id = `section-${index}`;
+                
+                const timelineContent = document.createElement('div');
+                timelineContent.className = 'timeline-content';
+                
+                const title = document.createElement('h3');
+                title.setAttribute('data-year', item.year);
+                title.textContent = item.title;
+                
+                const description = document.createElement('p');
+                description.textContent = item.description;
+                
+                const codeBlock = document.createElement('pre');
+                codeBlock.className = 'code-block';
+                codeBlock.innerHTML = `<code>${item.code}</code>`;
+                
+                timelineContent.appendChild(title);
+                timelineContent.appendChild(description);
+                timelineContent.appendChild(codeBlock);
+                
+                // Add click event to toggle code
+                timelineContent.addEventListener('click', () => {
+                    timelineContent.classList.toggle('active');
+                });
+                
+                timelineItem.appendChild(timelineContent);
+                timeline.appendChild(timelineItem);
+
+                // Create navigation link
+                const navItem = document.createElement('li');
+                const navLink = document.createElement('a');
+                navLink.href = `#section-${index}`;
+                navLink.textContent = `${item.year} - ${item.title}`;
+                
+                navLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Remove active class from all items
+                    document.querySelectorAll('.sidebar li').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.querySelectorAll('.timeline-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked items
+                    navItem.classList.add('active');
+                    document.getElementById(`section-${index}`).classList.add('active');
+                });
+                
+                navItem.appendChild(navLink);
+                navLinks.appendChild(navItem);
+            });
+
+            // Set first item as active by default
+            const firstNavItem = document.querySelector('.sidebar li');
+            const firstTimelineItem = document.querySelector('.timeline-item');
+            if (firstNavItem && firstTimelineItem) {
+                firstNavItem.classList.add('active');
+                firstTimelineItem.classList.add('active');
+            }
+        }
+
+        // Update active section on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.timeline-item');
+            const navItems = document.querySelectorAll('.sidebar li');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                if (section.classList.contains('active')) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+            
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.querySelector('a').getAttribute('href') === `#${currentSection}`) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // Initialize timeline
+        createTimelineItems();
+    </script>
+</body>
+</html>
